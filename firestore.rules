@@ -1,0 +1,42 @@
+rules_version = '2';
+
+// JOBREADY Firestore rules.
+// Phase 3: `users/{uid}` opened with strict ownership + shape checks.
+// Every other path stays DENIED by default (no rules => deny).
+// IMPORTANT: do NOT add a catch-all `if false` — a deny would override the
+// specific allows below (deny always wins in overlapping matches).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ---- users/{uid} — profile + preferences (Phases 3-4) ----
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow delete: if isOwner(uid);
+
+      // Updates may touch profile/preference fields but never auth-controlled or
+      // server-managed values (email, plan, role, admin, createdAt).
+      allow update: if isOwner(uid)
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['email', 'role', 'admin', 'plan', 'createdAt']);
+
+      // Create: only for yourself, with your own verified email, and never
+      // with reserved fields (role/admin/plan are server-managed).
+      allow create: if isOwner(uid)
+        && request.resource.data.email is string
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.email.size() > 0
+        && !request.resource.data.keys().hasAny(['role', 'admin', 'plan']);
+    }
+
+    // ---- Future collections (resumes, applications, events, ...) ----
+    // Each gets an explicit owner-scoped allow in its own phase.
+  }
+}

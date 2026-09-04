@@ -1,0 +1,13 @@
+rules_version = '2';
+
+// JOBREADY Storage rules — Phase 1 baseline: DENY ALL.
+// File uploads arrive in Phase 12. Rules will enforce path ownership
+// (users/{uid}/...), MIME allow-list, and size caps at that point.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
