@@ -124,3 +124,35 @@
     }
   }
 }
+
+/* ============================================================
+   Phase 6 — print pipeline.
+   The print route renders ResumeDocument (no app chrome) inside
+   .screen-frame; @page size/margins are injected per page size.
+   ============================================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+  }
+
+  .screen-frame {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .print-page {
+    width: auto !important;
+    box-shadow: none !important;
+  }
+
+  .print-page * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

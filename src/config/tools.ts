@@ -25,7 +25,7 @@ export const tools: ToolDef[] = [
     description:
       "Add, remove and reorder sections, choose a professional template, and preview a page-accurate A4/Letter layout before you export.",
     href: "/tools/resume-builder",
-    status: "planned",
+    status: "live",
     phase: 5,
   },
   {
@@ -35,7 +35,7 @@ export const tools: ToolDef[] = [
     description:
       "Paste a job description and get skills, qualifications, responsibilities and keywords — clearly grouped and explained.",
     href: "/tools/job-analyzer",
-    status: "planned",
+    status: "live",
     phase: 8,
   },
   {

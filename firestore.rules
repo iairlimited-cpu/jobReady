@@ -36,7 +36,40 @@ service cloud.firestore {
         && !request.resource.data.keys().hasAny(['role', 'admin', 'plan']);
     }
 
-    // ---- Future collections (resumes, applications, events, ...) ----
+    // ---- resumes/{resumeId} — CV data (Phase 5) ----
+    match /resumes/{resumeId} {
+      allow read: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId);
+
+      allow create: if isOwner(request.resource.data.userId)
+        && request.resource.data.data is map
+        && !request.resource.data.keys().hasAny(['role', 'admin']);
+
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.data is map;
+    }
+
+    // ---- applications/{applicationId} (Phase 7) ----
+    match /applications/{applicationId} {
+      allow read: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId);
+
+      allow create: if isOwner(request.resource.data.userId)
+        && !request.resource.data.keys().hasAny(['role', 'admin']);
+
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.userId == resource.data.userId;
+
+      // Timeline events are readable/writable by the owning user only.
+      match /events/{eventId} {
+        allow read, write: if isOwner(
+          get(/databases/$(database)/documents/applications/$(applicationId)).data.userId
+        );
+      }
+    }
+
+    // ---- Future collections ----
     // Each gets an explicit owner-scoped allow in its own phase.
   }
 }
